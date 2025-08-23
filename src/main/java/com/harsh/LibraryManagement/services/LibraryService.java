@@ -2,6 +2,7 @@ package com.harsh.LibraryManagement.services;
 
 
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,19 @@ public class LibraryService {
 		}
 		catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+		}
+	}
+
+
+
+	public ResponseEntity<Map<String, List<BookDTO>>> searchBookService(String name) {
+		
+		try {
+			Map<String, List<BookDTO>> map = bookRepositry.searchBook(name);
+			
+			return ResponseEntity.ok(map);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(e.getMessage(), List.of()));
 		}
 	}
 

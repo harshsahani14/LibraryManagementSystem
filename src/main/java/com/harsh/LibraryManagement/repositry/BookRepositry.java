@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -126,6 +129,40 @@ public class BookRepositry {
 		
 		return -1;
 		
+	}
+
+	
+	public Map<String, List<BookDTO>> searchBook(String name) {
+		
+		
+		List<BookDTO> list = new ArrayList<>();
+		
+    	String searchQuery = "Select name,genre,author,edition,isbn_no from books_details where name like ? ";
+    	
+    	try(Connection c = dataSource.getConnection()) {
+    		PreparedStatement searchPs = c.prepareStatement(searchQuery);
+    		
+    		searchPs.setString(1, name + "%");
+    		
+    		ResultSet rs = searchPs.executeQuery();
+    		
+    		
+    		while(rs.next()) {
+    			BookDTO bookDTO = toBookDTO(rs.getString("name"), rs.getString("genre"), rs.getString("author"), rs.getString("edition"), rs.getString("isbn_no"));
+                list.add(bookDTO);        
+    		}
+    		
+    		
+    		return Map.of("books",list);
+    	}
+    	catch(Exception e) {
+    		throw new RuntimeException("Server error while searching books: "+ e.getMessage());
+    		
+    	}
+	}
+	
+	public BookDTO toBookDTO(String name,String genre,String author,String edition,String isbnNo) {
+		return new BookDTO(name, genre, author, edition, isbnNo);
 	}
 		
 	
