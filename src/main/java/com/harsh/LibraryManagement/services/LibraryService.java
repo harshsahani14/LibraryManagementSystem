@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.harsh.LibraryManagement.dto.BookDTO;
+import com.harsh.LibraryManagement.dto.BorrowBookDTO;
+import com.harsh.LibraryManagement.dto.BorrowDTO;
 import com.harsh.LibraryManagement.dto.LoginDTO;
 import com.harsh.LibraryManagement.dto.RegisterDTO;
 import com.harsh.LibraryManagement.repositry.BookRepositry;
@@ -104,6 +106,45 @@ public class LibraryService {
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(e.getMessage(), List.of()));
 		}
+	}
+
+
+	public ResponseEntity<Map<String, List<BorrowDTO>>> viewBookService(String name, String genre, String author,String edition) {
+		
+		try {
+			Map<String, List<BorrowDTO>> map = borrowDetailsRepositry.viewBook(name, genre, author, edition);
+			
+			return ResponseEntity.ok(map);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(e.getMessage(), List.of()));
+		}
+		
+	}
+
+
+
+	public ResponseEntity<String> borrowBook(BorrowBookDTO borrowBookDTO) {
+		
+		try {
+			
+			if(bookRepositry.isBookAvaialble(borrowBookDTO)) {
+				
+				int bookId = bookRepositry.decrementBookQuantity(borrowBookDTO);
+				borrowDetailsRepositry.updateBorrowDetails(borrowBookDTO,bookId);
+				
+				return ResponseEntity.ok("Book borrowed sucessfully");
+				
+			}
+			else {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Book is not available for borrowing");
+			}
+			
+			
+		}
+		catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+		}
+				
 	}
 
 	

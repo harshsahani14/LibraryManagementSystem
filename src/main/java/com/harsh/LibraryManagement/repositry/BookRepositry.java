@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.harsh.LibraryManagement.dto.BookDTO;
+import com.harsh.LibraryManagement.dto.BorrowBookDTO;
+import com.harsh.LibraryManagement.dto.BorrowDTO;
 
 @Repository
 public class BookRepositry {
@@ -137,7 +140,7 @@ public class BookRepositry {
 		
 		List<BookDTO> list = new ArrayList<>();
 		
-    	String searchQuery = "Select name,genre,author,edition,isbn_no from books_details where name like ? ";
+    	String searchQuery = "Select name,genre,author,edition,isbn_no,available_quantity,total_quantity from books_details where name like ? ";
     	
     	try(Connection c = dataSource.getConnection()) {
     		PreparedStatement searchPs = c.prepareStatement(searchQuery);
@@ -164,7 +167,81 @@ public class BookRepositry {
 	public BookDTO toBookDTO(String name,String genre,String author,String edition,String isbnNo) {
 		return new BookDTO(name, genre, author, edition, isbnNo);
 	}
+
+	public boolean isBookAvaialble(BorrowBookDTO borrowBookDTO) {
 		
+		String searchQuery = "Select * from books_details"
+				+" where name=? and genre=? and edition=? and author=? and available_quantity>0 ";
+		
+		try(Connection c = dataSource.getConnection()) {
+    		
+    		PreparedStatement ps = c.prepareStatement(searchQuery);
+    		
+    		ps.setString(1, borrowBookDTO.getName());
+    		ps.setString(2, borrowBookDTO.getGenre());
+    		ps.setString(3, borrowBookDTO.getEdition());
+    		ps.setString(4, borrowBookDTO.getAuthor());
+    		
+    		ResultSet rs = ps.executeQuery();
+    		
+    		if(rs.isBeforeFirst()) {
+    			
+    			return true;
+    		}
+    		else {
+    			return false;
+    		}
+    		
+    	}
+    	catch(Exception e) {
+    		throw new RuntimeException("Server error while checking if book is available or not");
+    	}
+	}
+
+	
+	public int decrementBookQuantity(BorrowBookDTO borrowBookDTO) {
+		
+		
+		String selectQuery = "SELECT book_id FROM books_details "
+		        + "WHERE name = ? AND genre = ? AND edition = ? AND author = ?";
+
+		
+		String decreaseQuery = " Update books_details "
+				  +" set available_quantity=available_quantity-1 "
+				  + "where name=? and genre=? and edition=? and author=?"; 
+
+		try(Connection c = dataSource.getConnection()) {
+	
+			PreparedStatement decreasePs = c.prepareStatement(decreaseQuery);
+			PreparedStatement selectPs = c.prepareStatement(selectQuery);
+		
+			decreasePs.setString(1, borrowBookDTO.getName());
+			decreasePs.setString(2, borrowBookDTO.getGenre());
+			decreasePs.setString(3, borrowBookDTO.getEdition());
+			decreasePs.setString(4, borrowBookDTO.getAuthor());
+			
+			selectPs.setString(1, borrowBookDTO.getName());
+			selectPs.setString(2, borrowBookDTO.getGenre());
+			selectPs.setString(3, borrowBookDTO.getEdition());
+			selectPs.setString(4, borrowBookDTO.getAuthor());
+
+			decreasePs.executeUpdate();
+			ResultSet rs = selectPs.executeQuery();
+			
+			if (rs.next()) {
+			    return rs.getInt("book_id");
+			}
+			
+			return -1;
+		}
+		catch(Exception e) {
+			throw new RuntimeException("Server error while decrementing book quantity by one" + e.getMessage());
+			
+		}
+		
+	}
+
+	
 	
 	
 	
