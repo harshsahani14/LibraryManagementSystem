@@ -67,4 +67,10 @@ public class RestControllers {
 		
 		return libraryService.borrowBook(borrowBookDTO);
 	}
+	
+	@GetMapping("/viewReport")
+	public ResponseEntity<Map<String, List<?>>> viewReport(){
+		
+		return libraryService.viewReportService();
+	}
 }

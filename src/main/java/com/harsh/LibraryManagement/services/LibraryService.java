@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import com.harsh.LibraryManagement.dto.BookDTO;
 import com.harsh.LibraryManagement.dto.BorrowBookDTO;
 import com.harsh.LibraryManagement.dto.BorrowDTO;
+import com.harsh.LibraryManagement.dto.GenreDTO;
 import com.harsh.LibraryManagement.dto.LoginDTO;
 import com.harsh.LibraryManagement.dto.RegisterDTO;
+import com.harsh.LibraryManagement.dto.ReportDTO;
 import com.harsh.LibraryManagement.repositry.BookRepositry;
 import com.harsh.LibraryManagement.repositry.BorrowDetailsRepositry;
 import com.harsh.LibraryManagement.repositry.UserRepositry;
@@ -100,6 +102,7 @@ public class LibraryService {
 	public ResponseEntity<Map<String, List<BookDTO>>> searchBookService(String name) {
 		
 		try {
+			
 			Map<String, List<BookDTO>> map = bookRepositry.searchBook(name);
 			
 			return ResponseEntity.ok(map);
@@ -127,7 +130,7 @@ public class LibraryService {
 		
 		try {
 			
-			if(bookRepositry.isBookAvaialble(borrowBookDTO)) {
+			if( bookRepositry.isBookAvaialble(borrowBookDTO)) {
 				
 				int bookId = bookRepositry.decrementBookQuantity(borrowBookDTO);
 				borrowDetailsRepositry.updateBorrowDetails(borrowBookDTO,bookId);
@@ -145,6 +148,24 @@ public class LibraryService {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 		}
 				
+	}
+
+
+
+	public ResponseEntity<Map<String, List<? extends Object>>> viewReportService() {
+		
+		try {
+			
+			List<ReportDTO> list1 = borrowDetailsRepositry.getBooksDueToday();
+			List<GenreDTO> list2 = bookRepositry.getBooksByGenre();
+			
+			
+			return ResponseEntity.ok(Map.of("report",list1,"books",list2));
+			
+		}
+		catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(e.getMessage(),List.of()));
+		}
 	}
 
 	

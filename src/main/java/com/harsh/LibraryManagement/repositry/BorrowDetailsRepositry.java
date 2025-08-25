@@ -16,12 +16,15 @@ import org.springframework.stereotype.Repository;
 import com.harsh.LibraryManagement.dto.BookDTO;
 import com.harsh.LibraryManagement.dto.BorrowBookDTO;
 import com.harsh.LibraryManagement.dto.BorrowDTO;
+import com.harsh.LibraryManagement.dto.ReportDTO;
 
 @Repository
 public class BorrowDetailsRepositry {
 
 	@Autowired
 	private  DataSource dataSource;
+	
+	
 	
 	public void addBorrowDetails(int bookId) {
 		
@@ -117,6 +120,49 @@ public class BorrowDetailsRepositry {
 			
 			return;
 						
+		}
+
+		public List<ReportDTO> getBooksDueToday() {
+			
+			List<ReportDTO> list = new ArrayList<>();
+			
+			String reportQuery = "Select "
+								+ "t1.name,t1.genre,t1.edition,t1.author, "
+								+ "t3.username "
+								+ "from books_details t1 left join "
+								+ "borrow_details t2 on "
+								+ "t1.book_id=t2.book_id "
+								+ "left join users t3 on "
+								+ "t3.user_id=t2.borrowed_by "
+								+ "where DATE(t2.return_date)=CURDATE()";
+			
+			try(Connection c = dataSource.getConnection()) {
+				PreparedStatement reportPs = c.prepareStatement(reportQuery);
+				
+				ResultSet rs = reportPs.executeQuery();
+				
+				
+				while(rs.next()) {
+					
+					ReportDTO reportDTO = toReportDTO(rs.getString("name"),rs.getString("genre"),rs.getString("edition"),rs.getString("author"),rs.getString("username"));
+				    list.add(reportDTO);
+				}
+				
+				
+				return list;
+//				logger.info("Book report was viewed");
+				
+				
+			}
+			catch(Exception e) {
+				throw new RuntimeException("Server error fetching the books to be returned today:"+ e.getMessage());
+			}
+
+		}
+
+		private ReportDTO toReportDTO(String name, String genre, String edition, String author, String username) {
+			
+			return new ReportDTO(name, genre, edition, author, username);
 		}	
 		
 	

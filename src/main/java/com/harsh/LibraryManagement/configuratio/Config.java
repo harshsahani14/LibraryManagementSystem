@@ -34,18 +34,18 @@ public class Config {
 	        return new BCryptPasswordEncoder();
 	  }
 	 
-//	 @Bean
-//	    public CorsConfigurationSource corsConfigurationSource() {
-//	        CorsConfiguration configuration = new CorsConfiguration();
-//	        configuration.setAllowedOriginPatterns(List.of("*")); // allow all origins
-//	        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // allowed methods
-//	        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept")); // allowed headers
-//	        configuration.setAllowCredentials(true);
-//
-//	        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//	        source.registerCorsConfiguration("/**", configuration);
-//
-//	        return source;
-//	    }
+	 @Bean
+	    public CorsConfigurationSource corsConfigurationSource() {
+	        CorsConfiguration configuration = new CorsConfiguration();
+	        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000")); // allow all origins
+	        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // allowed methods
+	        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept")); // allowed headers
+	        configuration.setAllowCredentials(true);
+
+	        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	        source.registerCorsConfiguration("/**", configuration);
+
+	        return source;
+	    }
 }
 

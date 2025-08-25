@@ -17,12 +17,16 @@ import org.springframework.stereotype.Repository;
 import com.harsh.LibraryManagement.dto.BookDTO;
 import com.harsh.LibraryManagement.dto.BorrowBookDTO;
 import com.harsh.LibraryManagement.dto.BorrowDTO;
+import com.harsh.LibraryManagement.dto.GenreDTO;
 
 @Repository
 public class BookRepositry {
 	
 	@Autowired
     private DataSource dataSource;
+	
+	@Autowired
+	private BorrowDetailsRepositry borrowDetailsRepositry;
 	
 	public int exists(BookDTO bookDTO) {
 		
@@ -165,16 +169,24 @@ public class BookRepositry {
 	}
 	
 	public BookDTO toBookDTO(String name,String genre,String author,String edition,String isbnNo) {
-		return new BookDTO(name, genre, author, edition, isbnNo);
+		return new BookDTO(name, genre,edition,author, isbnNo);
 	}
 
 	public boolean isBookAvaialble(BorrowBookDTO borrowBookDTO) {
+		
+		
 		
 		String searchQuery = "Select * from books_details"
 				+" where name=? and genre=? and edition=? and author=? and available_quantity>0 ";
 		
 		try(Connection c = dataSource.getConnection()) {
-    		
+			
+			BookDTO bookDTO = this.toBookDTO(borrowBookDTO.getName(),borrowBookDTO.getGenre(),borrowBookDTO.getEdition(),borrowBookDTO.getAuthor(),null);
+		
+			if(this.exists(bookDTO)==-1) {
+				return false;
+			}
+			
     		PreparedStatement ps = c.prepareStatement(searchQuery);
     		
     		ps.setString(1, borrowBookDTO.getName());
@@ -239,6 +251,45 @@ public class BookRepositry {
 			
 		}
 		
+	}
+
+	public List<GenreDTO> getBooksByGenre() {
+					
+		
+			List<GenreDTO> list = new ArrayList<>();
+			
+			String genreQuery = "Select genre,sum(total_quantity) as count "
+							+"from books_details "
+							+ "group by genre ";
+			
+			try(Connection c = dataSource.getConnection()) {
+
+				PreparedStatement genrePs = c.prepareStatement(genreQuery);
+				
+				ResultSet rs = genrePs.executeQuery();
+				
+				// understand formatting    		
+				
+				
+				while(rs.next()) {
+					  GenreDTO genreDTO = toGenreDTO(rs.getString("genre"),rs.getInt("count"));
+					  list.add(genreDTO);
+				}
+				
+				return list;
+		
+//			logger.info("Book report was viewed");
+			
+			}
+			catch(Exception e) {
+				throw new RuntimeException("Server error while getting books by genre: "+ e.getMessage());
+			}
+
+	}
+
+	private GenreDTO toGenreDTO(String genre, int quantity) {
+		
+		return new GenreDTO(genre, quantity);
 	}
 
 	
