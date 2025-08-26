@@ -34,6 +34,7 @@ const LoginPage = () => {
 
         const data = await response.json();
 
+        console.log(data.user_id);
 
         dispatch(update(data.user_id));
         toast.dismiss()

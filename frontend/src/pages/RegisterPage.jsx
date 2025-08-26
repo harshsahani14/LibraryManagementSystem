@@ -26,7 +26,7 @@ const RegisterPage = () => {
 
             toast.dismiss();
             toast.success("Registered Successfully");
-            navigate("/");
+            navigate("/login");
         }
         catch(error){
             console.log(error.message);
