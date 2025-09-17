@@ -1,1 +1,1 @@
-A library management system buitl using Spring boot, ReactJs, Log4j, MySql, JDBC
+A library management system built using Spring boot, ReactJs, Log4j, MySql, JDBC
